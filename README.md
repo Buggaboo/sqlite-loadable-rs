@@ -136,6 +136,12 @@ Some real-world non-Rust examples of traditional virtual tables in SQLite includ
 
 It's in the works, stay tuned. TODO documentation
 
+### Window / Aggregate functions
+
+A window function can be defined using the `define_window_function`. The step and final function must be defined. See the [`sum_int.rs`](./examples/sum_int.rs) implementation and the [sqlite's own example](https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions) for a full solution.
+
+There is also a [`define_window_function_with_aux`](./src/window.rs), in case a mutable auxillary object is required in place of the context aggregate pointer provided by sqlite3. In this case, the object being passed is not required to implement the Copy trait.
+
 ## Examples
 
 The [`examples/`](./examples/) directory has a few bare-bones examples of extensions, which you can build with:
@@ -245,7 +251,7 @@ A hello world extension in C is `17KB`, while one in Rust is `469k`. It's still 
 
 - [ ] Stabilize scalar function interface
 - [ ] Stabilize virtual table interface
-- [ ] Support [aggregate window functions](https://www.sqlite.org/windowfunctions.html#udfwinfunc) ([#1](https://github.com/asg017/sqlite-loadable-rs/issues/1))
+- [x] Support [aggregate window functions](https://www.sqlite.org/windowfunctions.html#udfwinfunc) ([#1](https://github.com/asg017/sqlite-loadable-rs/issues/1))
 - [ ] Support [collating sequences](https://www.sqlite.org/c3ref/create_collation.html) ([#2](https://github.com/asg017/sqlite-loadable-rs/issues/2))
 - [x] Support [virtual file systems](sqlite.org/vfs.html) ([#3](https://github.com/asg017/sqlite-loadable-rs/issues/3))
 

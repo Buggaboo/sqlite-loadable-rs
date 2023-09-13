@@ -34,7 +34,7 @@ impl SqliteVfs for MemVfs {
         let rust_file = MemFile {
             size: 0,
             max_size: 0,
-            file_contents: Vec::new(),
+            file_contents: Vec::new()
         };
         
         // TODO finish implementation
