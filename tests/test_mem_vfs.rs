@@ -91,8 +91,7 @@ impl SqliteVfs for MemVfs {
         self.default_vfs.dl_error(n_byte, z_err_msg)
     }
 
-    fn dl_sym(&mut self, arg2: *mut c_void, z_symbol: *const c_char)
-        -> Option<unsafe extern "C" fn(arg1: *mut sqlite3_vfs, arg2: *mut c_void, z_symbol: *const c_char)> {
+    fn dl_sym(&mut self, arg2: *mut c_void, z_symbol: *const c_char) -> Option<unsafe extern "C" fn(arg1: *mut sqlite3_vfs, arg2: *mut c_void, z_symbol: *const c_char)> {
         self.default_vfs.dl_sym(arg2, z_symbol)
     }
 
@@ -296,4 +295,33 @@ pub fn sqlite3_memvfs_init(db: *mut sqlite3) -> Result<()> {
     define_scalar_function(db, "memvfs_from_file", 1, vfs_from_file, flags)?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use rusqlite::{ffi::sqlite3_auto_extension, Connection};
+
+    #[test]
+    fn test_rusqlite_auto_extension() {
+        unsafe {
+            sqlite3_auto_extension(Some(std::mem::transmute(
+                sqlite3_memvfs_init as *const (),
+            )));
+        }
+
+        let conn = Connection::open_in_memory().unwrap();
+
+        conn.execute("ATTACH memvfs_from_file('from.db') AS inmem;", ());
+
+        conn.execute("CREATE TABLE t3(x, y)", ());
+        conn.execute("INSERT INTO t3 VALUES('a', 4),('b', 5),('c', 3),('d', 8),('e', 1)", ());
+
+        let result: String = conn
+        .query_row("select x from t3 where y = 4", (), |x| x.get(0))
+        .unwrap();
+
+        assert_eq!(result, "a");
+    }
 }
