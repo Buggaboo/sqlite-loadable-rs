@@ -9,11 +9,10 @@ use std::{
 
 use crate::{
     api,
-    constants::{SQLITE_INTERNAL, SQLITE_OKAY},
     errors::{Error, ErrorKind, Result},
     ext::sqlite3ext_create_function_v2, FunctionFlags,
 };
-use sqlite3ext_sys::{sqlite3, sqlite3_context, sqlite3_user_data, sqlite3_value};
+use sqlite3ext_sys::{sqlite3, sqlite3_context, sqlite3_user_data, sqlite3_value, SQLITE_OK, SQLITE_INTERNAL};
 
 fn create_function_v2(
     db: *mut sqlite3,
@@ -42,7 +41,7 @@ fn create_function_v2(
         )
     };
 
-    if result != SQLITE_OKAY {
+    if result != SQLITE_OK {
         Err(Error::new(ErrorKind::DefineScalarFunction(result)))
     } else {
         Ok(())
@@ -202,7 +201,7 @@ where
     F: Fn(*mut sqlite3_context, &[*mut sqlite3_value]) -> Result<()>,
 {
     // TODO: how does x_func even get called here???
-    let function_pointer: *mut F = Box::into_raw(Box::new(x_func));
+    // let function_pointer: *mut F = Box::into_raw(Box::new(x_func));
 
     unsafe extern "C" fn x_func_wrapper<F>(
         context: *mut sqlite3_context,

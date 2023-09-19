@@ -3,22 +3,21 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 use std::{
     ffi::CString,
-    os::raw::{c_int, c_void},
+    os::raw::c_void,
     slice,
 };
 
 use crate::{
     api,
-    constants::{SQLITE_INTERNAL, SQLITE_OKAY},
     errors::{Error, ErrorKind, Result},
     ext::sqlite3ext_create_window_function, FunctionFlags,
 };
-use sqlite3ext_sys::{sqlite3, sqlite3_context, sqlite3_user_data, sqlite3_value};
+use sqlite3ext_sys::{sqlite3, sqlite3_context, sqlite3_user_data, sqlite3_value, SQLITE_OK, SQLITE_INTERNAL};
 
 fn create_window_function(
     db: *mut sqlite3,
     name: &str,
-    num_args: c_int,
+    num_args: i32,
     func_flags: FunctionFlags,
     p_app: *mut c_void,
     x_step: unsafe extern "C" fn(*mut sqlite3_context, i32, *mut *mut sqlite3_value),
@@ -44,7 +43,7 @@ fn create_window_function(
         )
     };
 
-    if result != SQLITE_OKAY {
+    if result != SQLITE_OK {
         Err(Error::new(ErrorKind::DefineWindowFunction(result)))
     } else {
         Ok(())
@@ -81,7 +80,7 @@ impl WindowFunctionCallbacks {
 pub fn define_window_function(
     db: *mut sqlite3,
     name: &str,
-    num_args: c_int,
+    num_args: i32,
     func_flags: FunctionFlags,
     x_step: ValueCallback,
     x_final: ContextCallback,
@@ -97,7 +96,7 @@ pub fn define_window_function(
     
     unsafe extern "C" fn x_step_wrapper(
         context: *mut sqlite3_context,
-        argc: c_int,
+        argc: i32,
         argv: *mut *mut sqlite3_value,
     )
     {
@@ -115,7 +114,7 @@ pub fn define_window_function(
 
     unsafe extern "C" fn x_inverse_wrapper(
         context: *mut sqlite3_context,
-        argc: c_int,
+        argc: i32,
         argv: *mut *mut sqlite3_value,
     )
     {
@@ -224,7 +223,7 @@ impl<T> WindowFunctionCallbacksWithAux<T> {
 pub fn define_window_function_with_aux<T>(
     db: *mut sqlite3,
     name: &str,
-    num_args: c_int,
+    num_args: i32,
     func_flags: FunctionFlags,
     x_step: ValueCallbackWithAux<T>,
     x_final: ContextCallbackWithAux<T>,
@@ -241,7 +240,7 @@ pub fn define_window_function_with_aux<T>(
     
     unsafe extern "C" fn x_step_wrapper<T>(
         context: *mut sqlite3_context,
-        argc: c_int,
+        argc: i32,
         argv: *mut *mut sqlite3_value,
     )
     {
@@ -259,7 +258,7 @@ pub fn define_window_function_with_aux<T>(
 
     unsafe extern "C" fn x_inverse_wrapper<T>(
         context: *mut sqlite3_context,
-        argc: c_int,
+        argc: i32,
         argv: *mut *mut sqlite3_value,
     )
     {
